@@ -1,15 +1,16 @@
 import os
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from google import genai
+import google.generativeai as genai
 from flask import Flask
 import threading
 
 # API Keys များကို Environment Variables မှ ယူမည်
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
-gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 bot = telebot.TeleBot(BOT_TOKEN)
+ai_model = genai.GenerativeModel('gemini-1.5-flash')
 app = Flask(__name__)
 
 @app.route('/')
@@ -20,10 +21,7 @@ def home():
 def handle_support(message):
     prompt = f"Customer support assistant အနေနဲ့ ဒီမေးခွန်းကို အကောင့်ဖွင့်ခြင်းနှင့် ဗွီဒီယိုအကြောင်းအရာများအတွက် အကောင်းဆုံးဖြေပေးပါ: {message.text}"
     
-    response = gemini_client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
-    )
+    response = ai_model.generate_content(prompt)
     
     markup = InlineKeyboardMarkup()
     markup.row(InlineKeyboardButton("🔄 နောက်ထပ်အဖြေ (More)", callback_data="more_answer"))
@@ -33,10 +31,7 @@ def handle_support(message):
 @bot.callback_query_handler(func=lambda call: call.data == "more_answer")
 def callback_more(call):
     prompt = "အရင်ပေးခဲ့တဲ့ အဖြေနဲ့မတူဘဲ တခြားသော ပိုကောင်းတဲ့ ဖောက်သည်ဝန်ဆောင်မှုအဖြေ တစ်ခုကို ထပ်ပေးပါ။"
-    response = gemini_client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
-    )
+    response = ai_model.generate_content(prompt)
     bot.answer_callback_query(call.id, "အဖြေအသစ် ထပ်ထုတ်နေပါပြီ...")
     bot.send_message(call.message.chat.id, response.text)
 

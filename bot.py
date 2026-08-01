@@ -10,7 +10,8 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN")
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 bot = telebot.TeleBot(BOT_TOKEN)
-ai_model = genai.GenerativeModel('gemini-1.5-flash')
+# Model နာမည်ကို gemini-2.5-flash သို့ ပြောင်းလိုက်ပါ
+ai_model = genai.GenerativeModel('gemini-2.5-flash')
 app = Flask(__name__)
 
 @app.route('/')
